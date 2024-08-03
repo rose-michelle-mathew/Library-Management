@@ -37,6 +37,11 @@ const router = createRouter({
       component: () => import('../views/ViewBooks.vue')
     },
     {
+      path: '/edit_book',
+      name: 'EditBook',
+      component: () => import('../views/EditBook.vue')
+    },
+    {
       path: '/add_section',
       name: 'AddSection',
       component: () => import('../views/AddSection.vue')

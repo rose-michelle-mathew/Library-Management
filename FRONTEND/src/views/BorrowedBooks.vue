@@ -24,7 +24,14 @@ function fetchBorrowedBooks() {
       }
     }).then(response => response.json())
       .then(data => {
-        borrowedBooks.value = data;
+        const today = new Date();
+        borrowedBooks.value = data.map(book => {
+          const dueDate = new Date(book.due_date);
+          if (dueDate < today && book.status !== 'returned') {
+            return { ...book, status: 'overdue' };
+          }
+          return book;
+        });
       })
       .catch(error => {
         console.log(error);
@@ -67,7 +74,39 @@ function returnBook(borrowedId) {
     }
   }
 }
+
+function revokeAccess(borrowedId) {
+  if (window.confirm('Are you sure you want to revoke access to this book?')) {
+    try {
+      fetch(`${auth_store.backend_url}/api/v1/revoke_access/${borrowedId}`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Authentication-Token': auth_store.token
+        }
+      }).then(response => {
+        if (response.ok) {
+          message_store.setmessage('Book access revoked successfully');
+          fetchBorrowedBooks(); // Refresh the list of borrowed books
+        } else {
+          response.json().then(data => {
+            console.log(data);
+            message_store.setmessage(data.message);
+          });
+        }
+      }).catch(error => {
+        console.log(error);
+        message_store.setmessage('Failed to revoke access');
+      });
+    } catch (error) {
+      console.log(error);
+      message_store.setmessage('Failed to revoke access');
+    }
+  }
+}
 </script>
+
 <template>
   <div class="container mt-4">
     <h2>Borrowed Books</h2>
@@ -93,7 +132,11 @@ function returnBook(borrowedId) {
             <td v-if="auth_store.role === 'librarian'">{{ book.user_name }}</td>
             <td>{{ book.issue_date }}</td>
             <td>{{ book.due_date }}</td>
-            <td><span class="badge bg-info">{{ book.status }}</span></td>
+            <td>
+              <span :class="{'badge': true, 'bg-info': book.status === 'borrowed', 'bg-warning': book.status === 'overdue'}">
+                {{ book.status }}
+              </span>
+            </td>
             <td>
               <button v-if="auth_store.role === 'librarian'" class="btn btn-warning" @click="revokeAccess(book.borrowed_id)">Revoke Access</button>
               <button v-else class="btn btn-primary" @click="returnBook(book.borrowed_id)">Return Book</button>
@@ -107,13 +150,4 @@ function returnBook(borrowedId) {
     </div>
   </div>
 </template>
-
-<style scoped>
-.table {
-  margin-top: 20px;
-}
-.table th, .table td {
-  vertical-align: middle;
-}
-</style>
 

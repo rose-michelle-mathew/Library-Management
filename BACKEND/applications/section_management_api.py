@@ -121,7 +121,6 @@ class AllBooks(Resource):
             })
         return make_response(jsonify(response),200)
     
-        
 class Books(Resource):
     
     ### adding a new book to the db, only restriced to librarian 
@@ -225,13 +224,13 @@ class Books(Resource):
             return make_response(jsonify({'message':'Book deleted successfully'}),200)
         except Exception as e:
             return make_response(jsonify({'message':str(e)}),400)
-        
-        
+              
 class BookRequests(Resource):
+
     
     @auth_token_required
     @roles_required('user')
-    def post(self):
+    def post(self): ## Creates  a new request 
         data = request.get_json()
 
         book_name = data.get('book_name')
@@ -253,12 +252,16 @@ class BookRequests(Resource):
         existing_request = Request.query.filter_by(book_id=book.id, user_id=user_id).first()
         if existing_request:
             return make_response(jsonify({'message': 'You have already requested this book'}), 400)
+        
         ### !!! Check If book is already borrowed by user
         already_borrowed = BorrowedBooks.query.filter_by(book_id=book.id, user_id=user_id).first()
         if already_borrowed:
             return make_response(jsonify({'message': 'You have already borrowed this book'}), 400)
 
-
+        borrowed_books_count = BorrowedBooks.query.filter_by(user_id=user_id).count()
+        if borrowed_books_count >= 5:
+            return make_response(jsonify({'message':'You have already borrowed more than 5 books, Return Books to request more'}), 400)
+        
         # Create a new request
         new_request = Request(book_id=book.id, user_id=user_id, status='Pending')  # Assuming status starts as Pending
         try:
@@ -271,7 +274,7 @@ class BookRequests(Resource):
 
     @auth_token_required
     @roles_required('user')
-    def put(self):
+    def put(self): ## return a book
         data = request.get_json()
         borrowed_id = data.get('borrowed_id')
 
@@ -333,6 +336,8 @@ class BookRequests(Resource):
                 'date_of_request': req.date_of_request.strftime('%Y-%m-%d')
             })
 
+
+
         return make_response(jsonify(response), 200)
 
 
@@ -340,7 +345,7 @@ class BookRequests(Resource):
             
     @auth_token_required
     @roles_required('user')
-
+    ## revoking  a request
     def delete(self, request_id):
         # Check if the request exists
         book_request = Request.query.get(request_id)
@@ -371,6 +376,9 @@ class ApproveRejectRequest(Resource):
             return make_response(jsonify({"message": "Request not found"}), 404)
 
         if action == 'approve':
+            borrowed_books_count = BorrowedBooks.query.filter_by(user_id=book_request.user_id, status='borrowed').count()
+            if borrowed_books_count >= 5:
+                return make_response(jsonify({"message": "User has borrowed more than 5 books"}), 400)
             # Approve the request and add to ActivityLog and BorrowedBooks
             issue_date = datetime.utcnow()
             due_date = issue_date + timedelta(days=7)  # Assuming a 7-day borrowing period
@@ -462,7 +470,7 @@ class UserHistory(Resource):
         user_id = current_user.id
 
         # Fetch activity logs with status 'rejected' and 'returned'
-        activity_logs = AllActivity.query.filter(AllActivity.user_id == user_id, AllActivity.status.in_(['rejected', 'returned'])).all()
+        activity_logs = AllActivity.query.filter(AllActivity.user_id == user_id, AllActivity.status.in_(['rejected', 'returned','revoked'])).all()
         activity_response = []
         for activity in activity_logs:
             book = Book.query.get(activity.book_id)
@@ -490,4 +498,31 @@ class UserHistory(Resource):
         }
 
         return make_response(jsonify(response), 200)
+    
+class RevokeAccess(Resource):
+    @auth_token_required
+    @roles_required('librarian')
+    def put(self, borrowed_id):
+        # Fetch the borrowed book record by ID
+        borrowed_book = BorrowedBooks.query.filter_by(id=borrowed_id).first()
+        if not borrowed_book:
+            return make_response(jsonify({"message": "Borrowed book record not found"}), 404)
+
+        # Log the revocation in the activity log
+        activity_log = AllActivity(
+            user_id=borrowed_book.user_id,
+            book_id=borrowed_book.book_id,
+            requested_date=borrowed_book.issue_date,
+            approved_date=datetime.utcnow(),
+            status='revoked'
+        )
+        try:
+            db.session.add(activity_log)
+            db.session.delete(borrowed_book)  # Remove the borrowed entry
+            db.session.commit()
+            return make_response(jsonify({"message": "Book access revoked successfully"}), 200)
+        except Exception as e:
+            db.session.rollback()
+            return make_response(jsonify({"message": str(e)}), 400)
+
 

@@ -78,6 +78,8 @@ function statusClass(status) {
     return 'badge bg-danger';
   } else if (status === 'returned') {
     return 'badge bg-success';
+  } else if (status === 'revoked') {
+    return 'badge bg-warning';
   } else {
     return 'badge bg-info';
   }

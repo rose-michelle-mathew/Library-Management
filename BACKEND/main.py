@@ -45,7 +45,7 @@ api.add_resource(Login,'/login') ## we are connecting
 api.add_resource(Register,'/register')
 api.add_resource(Logout,'/logout')
 
-from applications.section_management_api import AllSections,AllBooks, Sections,Books,BookRequests, ApproveRejectRequest, UserHistory
+from applications.section_management_api import AllSections,AllBooks, Sections,Books,BookRequests, ApproveRejectRequest, UserHistory, RevokeAccess
 api.add_resource(AllSections,'/get_all_sections')
 api.add_resource(Sections,'/add_section','/delete_section/<int:id>','/edit_section/<int:id>','/section/<int:id>')
 api.add_resource(Books,'/add_book','/edit_book/<int:id>','/delete_book/<int:id>')
@@ -53,6 +53,8 @@ api.add_resource(AllBooks,'/section/<int:id>/get_all_books')
 api.add_resource(BookRequests,'/request_book','/requests','/return','/revoke_book/<int:request_id>')
 api.add_resource(ApproveRejectRequest,'/approvals','/borrowedBooks')
 api.add_resource(UserHistory, '/history')
+api.add_resource(RevokeAccess, '/revoke_access/<int:borrowed_id>')
+
 
 
 
