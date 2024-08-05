@@ -4,6 +4,7 @@ from flask_security import auth_token_required, roles_required, roles_accepted, 
 from applications.model import *
 from applications.marshall_fields import *
 from datetime import datetime,timedelta
+from applications.task import send_book_notification, send_reminder_notifications
 
 
 class AllSections(Resource):
@@ -375,10 +376,14 @@ class ApproveRejectRequest(Resource):
         if not book_request:
             return make_response(jsonify({"message": "Request not found"}), 404)
 
+        user = User.query.get(book_request.user_id)
+        book = Book.query.get(book_request.book_id)
+
         if action == 'approve':
             borrowed_books_count = BorrowedBooks.query.filter_by(user_id=book_request.user_id, status='borrowed').count()
             if borrowed_books_count >= 5:
                 return make_response(jsonify({"message": "User has borrowed more than 5 books"}), 400)
+            
             # Approve the request and add to ActivityLog and BorrowedBooks
             issue_date = datetime.utcnow()
             due_date = issue_date + timedelta(days=7)  # Assuming a 7-day borrowing period
@@ -403,10 +408,15 @@ class ApproveRejectRequest(Resource):
             db.session.delete(book_request)
             db.session.commit()
 
+            # Send email notification
+            subject = "Book  Request Approved"
+            message = f"Your request to borrow '{book.name}' has been approved. Due date: {due_date.strftime('%Y-%m-%d')}."
+            send_book_notification.delay(user.email, subject, message)
+
             return make_response(jsonify({"message": "Request approved and book borrowed"}), 200)
 
         elif action == 'reject':
-            # Reject the request and add to ActivityLog
+            # Add to ActivityLog as rejected and delete the request
             activity_log = AllActivity(
                 user_id=book_request.user_id,
                 book_id=book_request.book_id,
@@ -415,9 +425,13 @@ class ApproveRejectRequest(Resource):
                 status='rejected'
             )
             db.session.add(activity_log)
-
             db.session.delete(book_request)
             db.session.commit()
+
+            # Send email notification
+            subject = "Book Borrow Request Rejected"
+            message = f"Your request to borrow '{book.name}' has been rejected."
+            send_book_notification.delay(user.email, subject, message)
 
             return make_response(jsonify({"message": "Request rejected"}), 200)
 
@@ -454,7 +468,7 @@ class ApproveRejectRequest(Resource):
                     }
                 },
                 'user_id': borrowed.user_id,
-                'user_name': user.username,  # Ensure this field exists in your User model
+                'user_name': user.username,  
                 'issue_date': borrowed.issue_date.strftime('%Y-%m-%d'),
                 'due_date': borrowed.due_date.strftime('%Y-%m-%d'),
                 'status': borrowed.status
@@ -525,4 +539,23 @@ class RevokeAccess(Resource):
             db.session.rollback()
             return make_response(jsonify({"message": str(e)}), 400)
 
+class Search(Resource):
+    
+    def post(self):
+        data = request.get_json()
+        search_param = data.get('search_param', '')
 
+        # Construct the search query
+        search = "%{}%".format(search_param)
+
+        try:
+            # Search for books with the provided search_param in title, author, or section
+            books = Book.query.join(Section).filter(
+                Book.name.like(search) |
+                Book.authors.like(search) |
+                Section.section_name.like(search)
+            ).all()
+
+            return make_response(jsonify(books), 200)
+        except Exception as e:
+            return {'message': str(e)}, 400
