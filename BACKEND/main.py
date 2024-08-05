@@ -1,25 +1,19 @@
-import celery
 from flask import Flask, jsonify, request
-
+from flask_cors import CORS
+from applications.config import Config
 
 from applications.model import User, Role
 from applications.database import db
-from applications.config import Config
-from flask_restful import Api
-
-from flask_cors import CORS
-
-
-from flask_security import Security, SQLAlchemySessionUserDatastore, hash_password
-
 from applications.user_datastore import user_datastore
+
+from flask_restful import Api
+from flask_security import Security, SQLAlchemySessionUserDatastore, hash_password
 
 from applications import cache
 from applications.workers import celery_init_app
 from applications import task
 from applications.cache import init_app
-
-
+import celery
 
 
 def create_app():
@@ -70,14 +64,14 @@ api.add_resource(Search, '/search')
 
 
 from celery.schedules import crontab
-from applications.task import send_reminder_notifications
+from applications.task import send_reminder_notifications, check_and_send_reminders
 
 
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
-        crontab(hour=10, minute=33),
-        send_reminder_notifications.s("Happy Sunday"),
+        crontab(hour=17, minute=56),
+        check_and_send_reminders.s(),
     )
 
 
