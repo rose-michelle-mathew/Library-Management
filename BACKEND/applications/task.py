@@ -25,7 +25,7 @@ def check_and_send_reminders():
         time.sleep(1)
 
     print("Hello Celery")
-    
+
 @celery.task()
 def send_book_notification(email, subject, message):
     with app.app_context():
@@ -57,4 +57,4 @@ def hello_world():
         print(i)
         time.sleep(1)
 
-    print("Hello Celery")
+    print("Hello Celery") 
