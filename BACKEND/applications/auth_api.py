@@ -1,7 +1,10 @@
+from flask_login import current_user
 from applications.user_datastore import user_datastore
 from flask_restful import Resource
 from flask import make_response, jsonify, request
 from flask_security import utils, auth_token_required
+from applications.model import *
+
 
 class Login(Resource):
     def post(self):
@@ -22,6 +25,10 @@ class Login(Resource):
 
         utils.login_user(user)
         auth_token = user.get_auth_token()
+
+        login_entry = UserLogins(user_id=user.id)
+        db.session.add(login_entry)
+        db.session.commit()
 
         response = {
             'message':'Login Successful',
@@ -85,12 +92,19 @@ class Register(Resource):
             return make_response(jsonify({'message':str(e)}),500)
         
 class Logout(Resource):
-    @auth_token_required ##check if user is logged in already.
+    @auth_token_required  # Ensure user is authenticated
     def post(self):
+        user = current_user
+
+        # Find the latest login entry for the current user
+        login_entry = UserLogins.query.filter_by(user_id=user.id).order_by(UserLogins.login_time.desc()).first()
+        if login_entry and not login_entry.logout_time:
+            login_entry.logout_time = datetime.utcnow()
+            db.session.commit()
+
         utils.logout_user()
-        return make_response(jsonify({'message':'Logout Successful'}),200)
 
-
+        return make_response(jsonify({'message': 'Logout Successful'}), 200)
 
         
         

@@ -46,6 +46,7 @@ class Section(db.Model):
 
     # Relationships
     books = db.relationship('Book', backref='section', lazy=True)
+    
 
     def __repr__(self):
         return f'<Section {self.section_name}>'
@@ -98,3 +99,12 @@ class AllActivity(db.Model):
 
     def __repr__(self):
         return f'<AllActivity {self.id} - {self.status}>'
+    
+class UserLogins(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    login_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    logout_time = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f'<UserLogins {self.id} - User {self.user_id}>'

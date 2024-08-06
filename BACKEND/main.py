@@ -16,6 +16,7 @@ from applications.cache import init_app
 import celery
 
 
+
 def create_app():
     app = Flask(__name__)
 
@@ -23,7 +24,6 @@ def create_app():
     db.init_app(app)   ##database initialization
 
     api = Api(app, prefix ='/api/v1')  ## created instance of API
-
 
     # user_datastore = SQLAlchemySessionUserDatastore(db.session,User,Role)  ##set up user datastore that will help in authentication - commented to remove circular import errors 
     app.security = Security(app, user_datastore)
@@ -41,6 +41,8 @@ def create_app():
     return app,  api
 
 app, api = create_app() 
+cache.init_app(app)
+
 
 celery_app =celery_init_app(app)
 CORS(app)
@@ -64,16 +66,22 @@ api.add_resource(Search, '/search')
 
 
 from celery.schedules import crontab
-from applications.task import send_reminder_notifications, check_and_send_reminders
+from applications.task import  check_and_send_reminders, send_monthly_activity_report
 
 
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
+    # Schedule daily reminder task at 19:01
     sender.add_periodic_task(
-        crontab(hour=17, minute=56),
+        crontab(hour=20, minute=55),
         check_and_send_reminders.s(),
     )
-
+    
+    # Schedule monthly report task on the first day of every month at midnight
+    sender.add_periodic_task(
+        crontab(day_of_month=6, hour=20, minute=45),
+        send_monthly_activity_report.s(),
+    )
 
 # @celery_app.on_after_configure.connect
 # def setup_periodic_tasks(sender, **kwargs):
