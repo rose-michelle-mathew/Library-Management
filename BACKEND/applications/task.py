@@ -1,4 +1,5 @@
 from collections import defaultdict
+import csv
 from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from flask import Flask, render_template
@@ -120,9 +121,7 @@ def generate_monthly_report_data():
         'returned_books': returned_books,
         'overdue_books': overdue_books,
     }
-
 @shared_task(ignore_result=False)
-
 def send_monthly_activity_report():
     today = datetime.today()
     first_day_of_last_month = today.replace(day=1) - timedelta(days=1)
@@ -148,12 +147,22 @@ def send_monthly_activity_report():
         AllActivity.requested_date >= first_day_of_last_month,
         AllActivity.requested_date <= last_day_of_last_month
     ).group_by(Section.section_name).all()
-    # # Debugging: Print the data to ensure correctness
-    # print("Issued Books Data:", issued_books_data)
-    # print("Overdue Books Data:", overdue_books_data)
-    # print("Books by Section Data:", books_by_section) # Prepare the data for the report
 
+    # Query newly created books
+    new_books_data = db.session.query(Book, Section).join(Section).filter(
+        Book.date_created >= first_day_of_last_month,
+        Book.date_created <= last_day_of_last_month
+    ).all()
 
+    # Query newly created sections and count the number of books in each section
+    new_sections_data = db.session.query(
+        Section, func.count(Book.id).label('book_count')
+    ).outerjoin(Book).filter(
+        Section.date_created >= first_day_of_last_month,
+        Section.date_created <= last_day_of_last_month
+    ).group_by(Section.id).all()
+
+    # Prepare the data for the report
     data = {
         'issued_books': [
             {
@@ -179,6 +188,22 @@ def send_monthly_activity_report():
                 'count': count
             }
             for section, count in books_by_section
+        ],
+        'new_books': [
+            {
+                'book_name': book.Book.name,
+                'date_created': book.Book.date_created.strftime('%Y-%m-%d'),
+                'section': book.Section.section_name
+            }
+            for book in new_books_data
+        ],
+        'new_sections': [
+            {
+                'section_name': section.Section.section_name,
+                'date_created': section.Section.date_created.strftime('%Y-%m-%d'),
+                'book_count': section.book_count
+            }
+            for section in new_sections_data
         ]
     }
 
@@ -190,3 +215,69 @@ def send_monthly_activity_report():
         message=message,
         content="html"
     )
+
+@shared_task(ignore_result=False)
+def export_all_activity_to_csv():
+    # Calculate the first and last day of the previous month
+    today = datetime.today()
+    first_day_of_this_month = today.replace(day=1)
+    last_day_of_last_month = first_day_of_this_month - timedelta(days=1)
+    first_day_of_last_month = last_day_of_last_month.replace(day=1)
+    
+    # Query AllActivity with joins to Book and User for the previous month
+    activity_data = db.session.query(
+        AllActivity,
+        Book.name.label('book_name'),
+        User.username.label('username')
+    ).join(Book, AllActivity.book_id == Book.id) \
+     .join(User, AllActivity.user_id == User.id) \
+     .filter(
+         AllActivity.requested_date >= first_day_of_last_month,
+         AllActivity.requested_date <= last_day_of_last_month
+     ).all()
+    
+    # Define the CSV file path
+    csv_file_path = f"activity_report_{first_day_of_last_month.strftime('%m - %Y ')}.csv"
+
+    # Write data to CSV
+    with open(csv_file_path, "w", newline="") as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=",")
+        
+        # Write header
+        csvwriter.writerow(["ID", "Book Name", "Username", "Requested Date", "Approved Date", "Status"])
+        
+        # Write data rows
+        for record in activity_data:
+            activity, book_name, username = record
+            csvwriter.writerow([
+                activity.id,
+                book_name,
+                username,
+                activity.requested_date.strftime('%Y-%m-%d %H:%M:%S'),
+                activity.approved_date.strftime('%Y-%m-%d %H:%M:%S'),
+                activity.status
+            ])
+    send_completion_alert(csv_file_path)
+
+    print(f"CSV export completed: {csv_file_path}")
+
+@shared_task(ignore_result=False)
+def send_completion_alert(file_path):
+    with app.app_context():  # Ensure the Flask app context is available
+        # Define the subject and recipient
+        subject = "Batch Job Completed"
+        recipient_email = "librarian@gmail.com"
+        
+        # Create the email message
+        msg = Message(
+            subject=subject,
+            sender="noreply@library.com",
+            recipients=[recipient_email]
+        )
+        msg.body = f"The batch job has completed successfully. The report is available at {file_path}."
+        
+        # Send the email
+        mail.send(msg)
+        
+        # Return the message object
+        return f"Email sent to {recipient_email} with file path {file_path}"

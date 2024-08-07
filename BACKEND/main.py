@@ -66,7 +66,7 @@ api.add_resource(Search, '/search')
 
 
 from celery.schedules import crontab
-from applications.task import  check_and_send_reminders, send_monthly_activity_report
+from applications.task import  check_and_send_reminders, send_monthly_activity_report, export_all_activity_to_csv
 
 
 @celery_app.on_after_configure.connect
@@ -79,8 +79,13 @@ def setup_periodic_tasks(sender, **kwargs):
     
     # Schedule monthly report task on the first day of every month at midnight
     sender.add_periodic_task(
-        crontab(day_of_month=6, hour=20, minute=45),
+        crontab(day_of_month=7, hour=20, minute=53),
         send_monthly_activity_report.s(),
+    )
+
+    sender.add_periodic_task(
+        crontab(day_of_month=7, hour=23, minute=17),
+        export_all_activity_to_csv(),
     )
 
 # @celery_app.on_after_configure.connect

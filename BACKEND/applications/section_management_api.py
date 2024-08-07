@@ -133,8 +133,6 @@ class Books(Resource):
         book_name = data.get('book_name')
         content =data.get('content')
         authors = data.get('authors')
-        # date_issued = data.get('date_issued')
-        # return_date = data.get('return_date')
         section_name = data.get('section_name')
         section_id = data.get('section_id')
 
@@ -180,8 +178,6 @@ class Books(Resource):
         book_name = data.get('book_name')
         content =data.get('content')
         authors = data.get('authors')
-        # date_issued = data.get('date_issued')
-        # return_date = data.get('return_date')
         section_name = data.get('section_name')
         section_id = data.get('section_id')
 

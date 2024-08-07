@@ -127,7 +127,50 @@
         </tbody>
     </table>
 </body>
+  <!-- New Books Section -->
+  <h2 class="section-title">Newly Created Books</h2>
+  <table>
+      <thead>
+          <tr>
+              <th>Book Name</th>
+              <th>Date Created</th>
+              <th>Section</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for book in data.new_books %}
+              <tr>
+                  <td>{{ book.book_name }}</td>
+                  <td>{{ book.date_created }}</td>
+                  <td>{{ book.section }}</td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
 
-
+  <!-- New Sections Section -->
+  <h2 class="section-title">Newly Created Sections</h2>
+  {% if data.new_sections|length > 0 %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Section Name</th>
+                  <th>Date Created</th>
+                  <th>Number of Books</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for section in data.new_sections %}
+                  <tr>
+                      <td>{{ section.section_name }}</td>
+                      <td>{{ section.date_created }}</td>
+                      <td>{{ section.book_count }}</td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  {% else %}
+      <p>No new sections created this month.</p>
+  {% endif %}
 </body>
 </html>

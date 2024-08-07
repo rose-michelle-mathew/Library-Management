@@ -1,0 +1,53 @@
+ID,Book Name,Username,Requested Date,Approved Date,Status
+5,A Study in Scarlet,rose123,2024-07-28 08:50:20,2024-07-28 09:30:14,borrowed
+6,Gone Girl,rose123,2024-07-28 09:37:03,2024-07-28 10:50:51,borrowed
+7,To Kill a Mocking Bird,rose123,2024-07-28 09:37:01,2024-07-28 10:50:55,rejected
+8,To Kill a Mocking Bird,rose123,2024-07-28 10:51:40,2024-07-28 11:00:41,borrowed
+9,A Study in Scarlet,michelle99,2024-07-28 11:16:14,2024-07-28 11:16:51,borrowed
+10,The Great Gatsby,michelle99,2024-07-28 11:16:15,2024-07-28 11:16:54,borrowed
+11,A Study in Scarlet,michelle99,2024-07-28 11:16:51,2024-07-28 12:26:38,returned
+12,The Great Gatsby,michelle99,2024-07-28 11:16:54,2024-07-28 12:35:29,returned
+13,The Great Gatsby,michelle99,2024-07-28 12:35:20,2024-07-30 15:13:44,borrowed
+14,Gone Girl,rose123,2024-07-28 10:51:41,2024-07-30 15:13:47,borrowed
+15,Rebecca,michelle99,2024-07-28 12:14:55,2024-07-31 02:48:20,borrowed
+16,The Martian,michelle99,2024-07-28 11:16:11,2024-07-31 02:48:22,rejected
+18,Gone Girl,rose123,2024-07-30 15:13:47,2024-07-31 02:56:48,returned
+19,Gone Girl,rose123,2024-07-28 10:50:51,2024-07-31 02:58:06,returned
+20,A Study in Scarlet,rose123,2024-07-28 09:30:14,2024-07-31 03:06:59,returned
+21,To Kill a Mocking Bird,rose123,2024-07-28 11:00:41,2024-07-31 04:03:35,returned
+22,Rebecca,michelle99,2024-07-31 02:48:20,2024-07-31 05:25:40,revoked
+23,The Great Gatsby,michelle99,2024-07-30 15:13:44,2024-07-31 05:25:59,revoked
+24,Gone Girl,michelle99,2024-07-28 12:14:56,2024-07-31 05:33:07,borrowed
+25,Gone Girl,michelle99,2024-07-31 05:33:07,2024-07-31 05:33:28,revoked
+26,A Study in Scarlet,michelle99,2024-07-28 12:15:00,2024-07-31 05:33:46,borrowed
+27,A Study in Scarlet,michelle99,2024-07-31 05:33:46,2024-07-31 05:33:52,revoked
+28,Gone Girl,rose123,2024-07-31 02:58:12,2024-07-31 05:46:46,borrowed
+29,To Kill a Mocking Bird,michelle99,2024-07-31 05:46:01,2024-07-31 05:46:48,borrowed
+30,A Study in Scarlet,michelle99,2024-07-31 05:46:04,2024-07-31 05:46:49,borrowed
+31,The Martian,michelle99,2024-07-31 05:45:54,2024-07-31 05:46:51,rejected
+32,Gone Girl,michelle99,2024-07-31 05:46:02,2024-07-31 05:46:54,rejected
+33,Gone Girl,rose123,2024-07-31 05:46:46,2024-07-31 05:52:06,returned
+34,The Great Gatsby,michelle99,2024-07-31 05:46:05,2024-07-31 05:53:21,borrowed
+35,To Kill a Mocking Bird,rose123,2024-07-31 05:52:15,2024-07-31 05:53:23,borrowed
+36,A Study in Scarlet,rose123,2024-07-31 05:52:20,2024-07-31 05:59:22,borrowed
+37,The Martian,rose123,2024-07-31 05:52:12,2024-07-31 05:59:26,borrowed
+38,Gone Girl,rose123,2024-07-31 05:52:16,2024-07-31 05:59:28,borrowed
+39,The Great Gatsby,rose123,2024-07-31 05:52:21,2024-07-31 05:59:29,borrowed
+40,Rebecca,rose123,2024-07-31 05:59:58,2024-07-31 06:00:29,borrowed
+41,Gone Girl,rose123,2024-07-31 05:59:59,2024-07-31 06:00:31,borrowed
+42,Gone Girl,rose123,2024-07-31 06:00:31,2024-07-31 06:02:37,revoked
+43,The Great Gatsby,michelle99,2024-07-31 05:53:21,2024-07-31 06:02:42,revoked
+44,To Kill a Mocking Bird,rose123,2024-07-31 05:53:23,2024-07-31 06:02:44,revoked
+45,A Study in Scarlet,rose123,2024-07-31 05:59:22,2024-07-31 06:04:03,returned
+46,Gone Girl,rose123,2024-07-31 06:04:09,2024-07-31 06:07:01,borrowed
+47,To Kill a Mocking Bird,rose123,2024-07-31 06:04:19,2024-07-31 06:07:03,borrowed
+48,A Study in Scarlet,michelle99,2024-07-31 05:46:49,2024-07-31 06:19:04,revoked
+49,The Martian,rose123,2024-07-31 05:59:26,2024-07-31 06:19:05,revoked
+50,Gone Girl,rose123,2024-07-31 05:59:28,2024-07-31 06:20:13,returned
+51,The Martian,rose123,2024-07-31 06:20:17,2024-07-31 06:21:38,borrowed
+52,The Great Gatsby,rose123,2024-07-31 05:59:29,2024-07-31 06:38:42,returned
+53,All the Light We Cannot See,rose123,2024-07-31 06:38:45,2024-07-31 07:00:20,borrowed
+54,Rebecca,rose123,2024-07-31 06:00:29,2024-08-04 04:45:43,returned
+55,To Kill a Mocking Bird,rose123,2024-07-31 06:07:03,2024-08-04 04:45:45,returned
+64,Gone Girl,rose123,2024-07-31 06:07:01,2024-08-04 13:31:38,returned
+65,The Martian,rose123,2024-07-31 06:21:38,2024-08-04 13:31:41,returned

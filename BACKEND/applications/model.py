@@ -57,6 +57,7 @@ class Book(db.Model):
     content = db.Column(db.Text, nullable=False)
     authors = db.Column(db.String(255), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
+    date_created= db.Column(db.DateTime, default=datetime.utcnow,nullable=True)
 
     # Relationships
     requests = db.relationship('Request', backref='book', lazy=True)
