@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useRouter,useRoute } from 'vue-router';
 import { authStore } from '../stores/authStore';
 import { messageStore } from '@/stores/messageStore';
+import { format } from 'date-fns';
 
 const router = useRouter();
 const route = useRoute(); // Initialize route with useRoute
@@ -21,13 +22,16 @@ const message_store = messageStore();
 
 async function addBook()
 {
-  
+  const date_created = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+
 const book_details =
     {
     book_name: book_name.value,
     section_name:section_name.value,
     content:content.value,
-    authors:authors.value
+    authors:authors.value,
+    date_created: date_created
+
     }
     try {
     const response = await fetch(`${auth_store.backend_url}/api/v1/add_book`, {
