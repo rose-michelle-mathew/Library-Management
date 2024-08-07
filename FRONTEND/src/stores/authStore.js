@@ -5,13 +5,21 @@ import {computed, ref} from 'vue';
 
 export const authStore = defineStore('authStore', () => { // creates a new pinia store with name authStore
     const backend_url ="http://127.0.0.1:5000"
-    const token = ref(computed(() => localStorage.getItem('token')))
-    const user_details = ref(computed(() => localStorage.getItem('user_details')))
+    const token = ref(localStorage.getItem('token'))
+    const user_details = ref(localStorage.getItem('user_details'))
     const isAuthenticated = ref(computed(() => token.value != null))
     const username = computed(() => JSON.parse(user_details.value).username)
     const role = computed(()=>JSON.parse(user_details.value).role)
 
+    function updateToken()
+    {
+        token.value=localStorage.getItem('token')
+    }
 
+    function updateUserDetails()
+    {
+        user_details.value = localStorage.getItem('user_details')
+    }
     function setToken(token){
         localStorage.setItem('token',token)
     }
@@ -180,7 +188,7 @@ export const authStore = defineStore('authStore', () => { // creates a new pinia
             }
         }
 
-    return {login,logout,register,token,username,isAuthenticated, backend_url,role};
+    return {login,logout,register,token,username,isAuthenticated, backend_url,role, updateToken,updateUserDetails};
 
 
   });

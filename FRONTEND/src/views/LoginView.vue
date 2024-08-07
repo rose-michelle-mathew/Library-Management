@@ -22,6 +22,8 @@ async function onSubmit() {
         console.log(resp);
         message_store.setmessage(resp.message);
         if (resp.status) {
+            auth_store.updateToken()
+            auth_store.updateUserDetails()
             router.push({ path: '/' });
         }
     } catch (error) {

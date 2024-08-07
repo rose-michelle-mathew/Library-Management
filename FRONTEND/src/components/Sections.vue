@@ -65,7 +65,7 @@ function deleteSection(id) {
       (response) => {
         if (response.ok) {
           message_store.setmessage('Section deleted successfully');
-          router.push('/Sections'); // Redirect to another page after deletion
+          router.push('/'); // Redirect to another page after deletion
         } else {
           response.json().then(data => {
             console.log(data);

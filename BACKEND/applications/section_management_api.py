@@ -540,22 +540,26 @@ class RevokeAccess(Resource):
             return make_response(jsonify({"message": str(e)}), 400)
 
 class Search(Resource):
-    
-    def post(self):
-        data = request.get_json()
-        search_param = data.get('search_param', '')
-
-        # Construct the search query
-        search = "%{}%".format(search_param)
-
-        try:
-            # Search for books with the provided search_param in title, author, or section
-            books = Book.query.join(Section).filter(
-                Book.name.like(search) |
-                Book.authors.like(search) |
-                Section.section_name.like(search)
-            ).all()
-
-            return make_response(jsonify(books), 200)
-        except Exception as e:
-            return {'message': str(e)}, 400
+    def get(self):
+        query = request.args.get('search', '')
+        
+        if not query:
+            return jsonify({'message': 'Search query is required'}), 400
+        
+        # Perform a search in the Section model (assuming you're using SQLAlchemy)
+        sections = Section.query.filter(
+            Section.section_name.ilike(f'%{query}%') |
+            Section.description.ilike(f'%{query}%')
+        ).all()
+        
+        if not sections:
+            return jsonify({'message': 'No sections found'}), 404
+        
+        sections_list = [{
+            'id': section.id,
+            'section_name': section.section_name,
+            'description': section.description,
+            'date_created': section.date_created.strftime('%Y-%m-%d %H:%M:%S')
+        } for section in sections]
+        
+        return jsonify({'sections': sections_list})

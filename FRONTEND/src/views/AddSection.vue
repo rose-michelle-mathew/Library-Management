@@ -4,6 +4,8 @@ import { ref } from 'vue';
 import { useRouter,useRoute } from 'vue-router';
 import { authStore } from '../stores/authStore';
 import { messageStore } from '@/stores/messageStore';
+import { format } from 'date-fns';
+
 
 const router = useRouter();
 const section_name = ref('');
@@ -14,12 +16,12 @@ const auth_store = authStore();
 const message_store = messageStore();
 
 async function addSection() {
-  const date_created = new Date().toISOString();
-
+  const date_created = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+  console.log(date_created)
   const section_details = {
     section_name: section_name.value,
     description: description.value,
-    date_created: "2024-06-22 10:00:00"
+    date_created: date_created
   };
 
     try {
