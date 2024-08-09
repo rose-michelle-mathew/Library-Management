@@ -3,7 +3,7 @@ import csv
 from datetime import datetime, timedelta
 import os
 from flask_mail import Mail, Message
-from flask import Flask, render_template
+from flask import Flask
 from sqlalchemy import func
 from applications.mailing import format_message, send_email
 from applications.model import *
