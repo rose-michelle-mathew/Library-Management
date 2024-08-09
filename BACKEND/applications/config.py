@@ -5,3 +5,8 @@ class Config:
 
     SECRET_KEY = 'mysecretkey'
     SECURITY_PASSWORD_SALT = 'mysecuritypasswordsalt'
+
+    CACHE_TYPE = "RedisCache"
+    CACHE_REDIS_HOST = "localhost"
+    CACHE_REDIS_PORT ="6379"
+    CACHE_DEFULT_TIMEOUT = 300

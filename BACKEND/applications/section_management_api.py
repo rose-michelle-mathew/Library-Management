@@ -6,9 +6,10 @@ from applications.model import *
 from applications.marshall_fields import *
 from datetime import datetime,timedelta
 from applications.task import export_all_activity_to_csv, send_book_notification
-
+from applications.cache import cache
 
 class AllSections(Resource):
+    @cache.cached(timeout=50)
 
 ## To obtain all the sections in the Database, User and Librarian can view
     @marshal_with(section)
@@ -473,7 +474,7 @@ class ApproveRejectRequest(Resource):
         return make_response(jsonify(response), 200)
     
 class UserHistory(Resource):
-
+    @cache.cached(timeout=50)
     @auth_token_required
     @roles_required('user')
     def get(self):

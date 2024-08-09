@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, make_response
 from flask_login import current_user
 from sqlalchemy import func
+from applications.cache import cache
 from applications.database import db
 from applications.model import *
 charts_bp = Blueprint('charts', __name__)
@@ -169,6 +170,8 @@ def get_borrowed_books_by_section():
     return make_response(jsonify(section_data), 200)
 
 @charts_bp.route('/api/v1/recent-user-activity', methods=['GET'])
+@cache.cached(timeout=50)
+
 def get_recent_user_activity():
     user_id = current_user.id
 
