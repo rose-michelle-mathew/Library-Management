@@ -27,7 +27,9 @@ const auth_store = authStore();
                     <a class="nav-link">{{auth_store.username}}</a>
                 </li>
 
-               
+                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated && auth_store.role != 'librarian'">
+                    <RouterLink class="nav-link" to="/requests">Requests</RouterLink>
+                </li>
                 <li class="nav-item disabled" v-if = "auth_store.isAuthenticated && auth_store.role != 'librarian'">
                     <RouterLink class="nav-link" to="/borrowed">My Books </RouterLink>
                 </li>

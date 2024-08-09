@@ -1,10 +1,11 @@
 from flask_restful import Resource, marshal_with
 from flask import make_response, jsonify, request
 from flask_security import auth_token_required, roles_required, roles_accepted, current_user
+from sqlalchemy import desc
 from applications.model import *
 from applications.marshall_fields import *
 from datetime import datetime,timedelta
-from applications.task import export_all_activity_to_csv, send_book_notification, send_reminder_notifications
+from applications.task import export_all_activity_to_csv, send_book_notification
 
 
 class AllSections(Resource):
@@ -356,7 +357,6 @@ class BookRequests(Resource):
         except Exception as e:
             return make_response(jsonify({'message': str(e)}), 400)
 
-
 class ApproveRejectRequest(Resource):
     @auth_token_required
     @roles_required('librarian')
@@ -480,7 +480,11 @@ class UserHistory(Resource):
         user_id = current_user.id
 
         # Fetch activity logs with status 'rejected' and 'returned'
-        activity_logs = AllActivity.query.filter(AllActivity.user_id == user_id, AllActivity.status.in_(['rejected', 'returned','revoked'])).all()
+        activity_logs = (AllActivity.query
+        .filter(AllActivity.user_id == user_id, AllActivity.status.in_(['rejected', 'returned', 'revoked']))
+        .order_by(desc(AllActivity.approved_date))  
+        .all()
+)
         activity_response = []
         for activity in activity_logs:
             book = Book.query.get(activity.book_id)
@@ -537,11 +541,7 @@ class RevokeAccess(Resource):
 
 class DownloadCSV(Resource):
     def get(self):
-        export_all_activity_to_csv.delay()
-        
-            
-        
-
+        export_all_activity_to_csv.delay() 
 
 class Search(Resource):
     def post(self):
