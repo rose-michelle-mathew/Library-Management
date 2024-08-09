@@ -9,7 +9,7 @@ from jinja2 import Template
 
 SMPTP_SERVER_HOST = 'localhost'
 SMPTP_SERVER_PORT = 1025
-SENDER_ADDRESS = 'reports@library.com'
+SENDER_ADDRESS = 'noreply@library.com'
 SENDER_PASSWORD = ''
 
 def send_email(to_address, subject, message,content='text',attachement_file=None):

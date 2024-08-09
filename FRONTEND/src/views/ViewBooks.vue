@@ -74,6 +74,8 @@ function deleteBook(bookId) {
         }
       }).then(response => {
         if (response.ok) {
+          books.value = books.value.filter(book => book.book_id !== bookId);
+
           message_store.setmessage('Book deleted successfully');
         } else {
           response.json().then(data => {

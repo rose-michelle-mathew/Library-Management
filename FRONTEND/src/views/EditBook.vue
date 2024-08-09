@@ -61,10 +61,9 @@
       console.log(error);
     }
   }
-  
   function cancelEditing() {
-    router.push('/books'); // Redirect to the books list without saving changes
-  }
+  router.go(-1); // Go back to the previous page
+}
   </script>
 
 <template>

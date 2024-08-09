@@ -42,6 +42,12 @@ const router = createRouter({
       component: () => import('../views/EditBook.vue')
     },
     {
+      path: '/edit_section',
+      name: 'EditSection',
+      component: () => import('../views/EditSection.vue')
+    },
+
+    {
       path: '/add_section',
       name: 'AddSection',
       component: () => import('../views/AddSection.vue')
@@ -65,6 +71,11 @@ const router = createRouter({
       path: '/history',
       name: 'History',
       component: () => import('../views/History.vue')
+    },
+    {
+      path: '/dashboard',
+      name: 'LibDash',
+      component: () => import('../views/LibDash.vue')
     }
   ]
 })

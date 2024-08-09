@@ -45,7 +45,9 @@ async function addSection() {
     console.log(data.message);
     console.log(date_created);
     message_store.setmessage(data.message);
-    // router.push('/');
+    router.push({
+      path: '/',
+    });
   } catch (error) {
 
     console.log(error.message);

@@ -1,21 +1,20 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from applications.config import Config
 
+from applications.config import Config
 from applications.model import User, Role
 from applications.database import db
 from applications.user_datastore import user_datastore
 
 from flask_restful import Api
 from flask_security import Security, SQLAlchemySessionUserDatastore, hash_password
+from flask import Flask
+from flask_cors import CORS
 
 from applications import cache
 from applications.workers import celery_init_app
 from applications import task
 from applications.cache import init_app
-import celery
 
-
+from applications.charts_api import charts_bp  
 
 def create_app():
     app = Flask(__name__)
@@ -45,15 +44,17 @@ cache.init_app(app)
 
 
 celery_app =celery_init_app(app)
+app.register_blueprint(charts_bp)
+
 CORS(app)
 
 from applications.auth_api import Login, Register, Logout
 
-api.add_resource(Login,'/login') ## we are connecting 
+api.add_resource(Login,'/login') 
 api.add_resource(Register,'/register')
 api.add_resource(Logout,'/logout')
 
-from applications.section_management_api import AllSections,AllBooks, Sections,Books,BookRequests, ApproveRejectRequest, UserHistory, RevokeAccess, Search
+from applications.section_management_api import AllSections,AllBooks, Sections,Books,BookRequests, ApproveRejectRequest, UserHistory, RevokeAccess, Search, DownloadCSV
 api.add_resource(AllSections,'/get_all_sections')
 api.add_resource(Sections,'/add_section','/delete_section/<int:id>','/edit_section/<int:id>','/section/<int:id>')
 api.add_resource(Books,'/add_book','/edit_book/<int:id>','/delete_book/<int:id>')
@@ -63,7 +64,7 @@ api.add_resource(ApproveRejectRequest,'/approvals','/borrowedBooks')
 api.add_resource(UserHistory, '/history')
 api.add_resource(RevokeAccess, '/revoke_access/<int:borrowed_id>')
 api.add_resource(Search, '/search')
-
+api.add_resource(DownloadCSV,'/download-csv')
 
 from celery.schedules import crontab
 from applications.task import  check_and_send_reminders, send_monthly_activity_report, export_all_activity_to_csv
@@ -73,27 +74,21 @@ from applications.task import  check_and_send_reminders, send_monthly_activity_r
 def setup_periodic_tasks(sender, **kwargs):
     # Schedule daily reminder task at 19:01
     sender.add_periodic_task(
-        crontab(hour=20, minute=55),
+        crontab(hour=9, minute=30),
         check_and_send_reminders.s(),
     )
     
     # Schedule monthly report task on the first day of every month at midnight
     sender.add_periodic_task(
-        crontab(day_of_month=7, hour=20, minute=53),
+        crontab(day_of_month=1, hour=8, minute=30),
         send_monthly_activity_report.s(),
     )
 
-    sender.add_periodic_task(
-        crontab(day_of_month=7, hour=23, minute=17),
-        export_all_activity_to_csv(),
-    )
+    # sender.add_periodic_task(
+    #     crontab(day_of_month=7, hour=23, minute=17),
+    #     export_all_activity_to_csv(),
+    # )
 
-# @celery_app.on_after_configure.connect
-# def setup_periodic_tasks(sender, **kwargs):
-#     sender.add_periodic_task(
-#         crontab(hour=10, minute=30),
-#         check_and_send_reminders(),
-#     )
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000)

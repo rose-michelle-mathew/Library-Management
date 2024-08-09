@@ -4,7 +4,7 @@ from flask_security import auth_token_required, roles_required, roles_accepted, 
 from applications.model import *
 from applications.marshall_fields import *
 from datetime import datetime,timedelta
-from applications.task import send_book_notification, send_reminder_notifications
+from applications.task import export_all_activity_to_csv, send_book_notification, send_reminder_notifications
 
 
 class AllSections(Resource):
@@ -535,27 +535,44 @@ class RevokeAccess(Resource):
             db.session.rollback()
             return make_response(jsonify({"message": str(e)}), 400)
 
-class Search(Resource):
+class DownloadCSV(Resource):
     def get(self):
-        query = request.args.get('search', '')
+        export_all_activity_to_csv.delay()
         
-        if not query:
-            return jsonify({'message': 'Search query is required'}), 400
+            
         
-        # Perform a search in the Section model (assuming you're using SQLAlchemy)
-        sections = Section.query.filter(
-            Section.section_name.ilike(f'%{query}%') |
-            Section.description.ilike(f'%{query}%')
+
+
+class Search(Resource):
+    def post(self):
+        data = request.get_json()
+        query = data.get('query', '')
+        section_id = data.get('section_id')  # Get section_id from the request
+
+        # Search for books by name, content, authors, or section name within the specific section
+        books = Book.query.join(Section).filter(
+            (Book.section_id == section_id) &  # Filter by section_id
+            (
+                (Book.name.ilike(f'%{query}%')) |
+                (Book.content.ilike(f'%{query}%')) |
+                (Book.authors.ilike(f'%{query}%')) |
+                (Section.section_name.ilike(f'%{query}%'))
+            )
         ).all()
-        
-        if not sections:
-            return jsonify({'message': 'No sections found'}), 404
-        
-        sections_list = [{
-            'id': section.id,
-            'section_name': section.section_name,
-            'description': section.description,
-            'date_created': section.date_created.strftime('%Y-%m-%d %H:%M:%S')
-        } for section in sections]
-        
-        return jsonify({'sections': sections_list})
+
+        response = []
+        for book in books:
+            section = Section.query.get(book.section_id)
+            response.append({
+                'book_id': book.id,
+                'name': book.name,
+                'description': book.content,
+                'authors': book.authors,
+                'section': {
+                    'section_id': section.id,
+                    'name': section.section_name,
+                    'description': section.description
+                }
+            })
+
+        return make_response(jsonify(response), 200)
