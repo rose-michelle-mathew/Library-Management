@@ -46,7 +46,7 @@ async function fetchHistory() {
             <tr>
               <th>Book Name</th>
               <th>Section</th>
-              <th>Requested Date</th>
+              <th>Issue/Request Date</th>
               <th>Status Update Date</th>
               <th>Status</th>
             </tr>

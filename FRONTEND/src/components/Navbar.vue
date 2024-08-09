@@ -26,23 +26,16 @@ const auth_store = authStore();
                 <li class="nav-item" v-if = "auth_store.isAuthenticated">
                     <a class="nav-link">{{auth_store.username}}</a>
                 </li>
-
-                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated && auth_store.role != 'librarian'">
-                    <RouterLink class="nav-link" to="/requests">Requests</RouterLink>
+                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated ">
+                    <RouterLink class="nav-link" to="/">Home</RouterLink>
                 </li>
-                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated && auth_store.role != 'librarian'">
-                    <RouterLink class="nav-link" to="/borrowed">My Books </RouterLink>
-                </li>
-                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated && auth_store.role === 'librarian'">
+                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated ">
                     <RouterLink class="nav-link" to="/dashboard">Dashboard</RouterLink>
                 </li>
                 <li class="nav-item disabled" v-if = "auth_store.isAuthenticated">
                     <RouterLink class="nav-link" to="/logout">Logout</RouterLink>
                 </li>
 
-                <li class="nav-item disabled" v-if = "auth_store.isAuthenticated && auth_store.role != 'librarian'">
-                    <RouterLink class="nav-link" to="/history">My History </RouterLink>
-                </li>
             </ul>
 
     </div>

@@ -1,27 +1,39 @@
 <template>
     <div class="chart-container">
-      <div class="chart-card">
+      <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="chart-card">
         <h3 class="chart-title">Most Borrowed Books</h3>
         <div class="chart-wrapper">
           <canvas ref="chart1"></canvas>
         </div>
       </div>
-      <div class="chart-card">
+      <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="chart-card">
         <h3 class="chart-title">Popular Authors</h3>
         <div class="chart-wrapper">
           <canvas ref="chart2"></canvas>
         </div>
       </div>
-      <div class="chart-card">
+      <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="chart-card">
         <h3 class="chart-title">Active Users</h3>
         <div class="chart-wrapper">
           <canvas ref="chart3"></canvas>
         </div>
       </div>
-      <div class="chart-card">
+      <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="chart-card">
         <h3 class="chart-title">Popular Sections</h3>
         <div class="chart-wrapper">
           <canvas ref="chart4"></canvas>
+        </div>
+      </div>
+      <div v-if="auth_store.isAuthenticated && auth_store.role != 'librarian'" class="chart-card">
+        <h3 class="chart-title">Your Activity</h3>
+        <div class="chart-wrapper">
+          <canvas ref="chart5"></canvas>
+        </div>
+      </div>
+      <div v-if="auth_store.isAuthenticated && auth_store.role != 'librarian'" class="chart-card">
+        <h3 class="chart-title">Books Borrowed By Section</h3>
+        <div class="chart-wrapper">
+          <canvas ref="chart6"></canvas>
         </div>
       </div>
     </div>
@@ -40,30 +52,50 @@
   const chart2 = ref(null); // Popular Authors
   const chart3 = ref(null); // Active Users
   const chart4 = ref(null); // Popular Sections
+  const chart5 = ref(null); // Active Users
+  const chart6 = ref(null); // Popular Sections
   
   function renderChart(canvasRef, data, type) {
-    const ctx = canvasRef.value.getContext('2d');
-  
-    new Chart(ctx, {
-      type: type,
-      data: data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { beginAtZero: true },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) { return Math.ceil(value) }, // Ensure whole numbers only
-            },
-            suggestedMax: Math.max(...data.datasets[0].data) + 3
+  const ctx = canvasRef.value.getContext('2d');
+
+  new Chart(ctx, {
+    type: type, // Pass 'pie' for pie chart
+    data: data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              let label = context.label || '';
+              if (context.parsed !== null) {
+                label += `: ${context.parsed}`;
+              }
+              return label;
+            }
+          }
+        }
+      },
+      // Conditionally include scales based on chart type
+      scales: type === 'pie' || type === 'doughnut' ? undefined : {
+        x: { beginAtZero: true },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) { return Math.ceil(value) }, // Ensure whole numbers only
           },
+          suggestedMax: Math.max(...data.datasets[0].data) + 3
         },
       },
-    });
-  }
-  
+    },
+  });
+}
+
   async function fetchChartData(apiEndpoint, chartRef, type) {
     try {
       const response = await fetch(apiEndpoint, {
@@ -81,15 +113,20 @@
         console.error('Failed to fetch chart data');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.log('Error:', error);
     }
   }
   
   onMounted(() => {
     fetchChartData(`${auth_store.backend_url}/api/v1/most-borrowed-books`, chart1, 'bar');
     fetchChartData(`${auth_store.backend_url}/api/v1/popular-authors`, chart2, 'line');
-    fetchChartData(`${auth_store.backend_url}/api/v1/active-users`, chart3, 'line');
+    fetchChartData(`${auth_store.backend_url}/api/v1/active-users`, chart3, 'pie');
     fetchChartData(`${auth_store.backend_url}/api/v1/popular-sections`, chart4, 'line');
+    fetchChartData(`${auth_store.backend_url}/api/v1/recent-user-activity`, chart5, 'bar');
+    fetchChartData(`${auth_store.backend_url}/api/v1/borrowed-books-by-section`, chart6, 'bar');
+
+
+    
   });
   </script>
   

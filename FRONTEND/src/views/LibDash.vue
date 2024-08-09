@@ -40,21 +40,34 @@ function navigateTo(path) {
 </script>
 
 <template>
-  <div class="container mt-4">
-    <h2>Librarian Dashboard</h2>
-    <div class="dashboard-bar">
+  <div  v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="container mt-4">
+    <h2 v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'">Librarian Dashboard</h2>
+   
+
+    <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="dashboard-bar">
       <span class="dashboard-text">User Activity Overview</span>
       <button @click="downloadReport" class="btn btn-primary">Download Report</button>
     </div>
 
-    <div class="dashboard-bar mt-3">
+    <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="dashboard-bar mt-3">
       <span class="dashboard-text">Book Requests</span>
-      <button v-if="auth_store.isAuthenticated" @click="navigateTo('/requests')" class="btn btn-primary">View Book Requests</button>
+      <button  @click="navigateTo('/requests')" class="btn btn-primary">View Book Requests</button>
     </div>
 
-    <div class="dashboard-bar mt-3">
+    <div v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" class="dashboard-bar mt-3">
       <span class="dashboard-text">Borrowed Books</span>
-      <button v-if="auth_store.isAuthenticated && auth_store.role === 'librarian'" @click="navigateTo('/borrowed')" class="btn btn-primary">View Borrowed Books</button>
+      <button @click="navigateTo('/borrowed')" class="btn btn-primary">View Borrowed Books</button>
+    </div>
+  </div>
+    <div  v-if="auth_store.isAuthenticated && auth_store.role != 'librarian'" class="container mt-4">
+      <h2 >User Dashboard</h2>
+
+      <div class="dashboard-bar horizontal">
+      <button @click="navigateTo('/')" class="btn btn-primary">Home</button>
+      <button @click="navigateTo('/requests')" class="btn btn-primary">My Book Requests</button>
+      <button @click="navigateTo('/borrowed')" class="btn btn-primary">Borrowed Books</button>
+      <button @click="navigateTo('/history')" class="btn btn-primary">User History</button>
+
     </div>
 
     <!-- Charts Section -->
