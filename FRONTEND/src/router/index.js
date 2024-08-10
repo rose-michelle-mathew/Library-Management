@@ -76,6 +76,11 @@ const router = createRouter({
       path: '/dashboard',
       name: 'LibDash',
       component: () => import('../views/LibDash.vue')
+    },
+    {
+      path: '/search',
+      name: 'Search',
+      component: () => import('../views/Search.vue')
     }
   ]
 })

@@ -69,13 +69,13 @@ function navigateTo(path) {
       <button @click="navigateTo('/history')" class="btn btn-primary">User History</button>
 
     </div>
-
+  </div>
     <!-- Charts Section -->
     <div class="mt-4">
      
       <LineChart />
     </div>
-  </div>
+
 </template>
 
 <style scoped>

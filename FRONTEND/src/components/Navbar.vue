@@ -17,18 +17,22 @@ function handleSearch(event) {
   }
 }
 
+function navigateTo(path) {
+  router.push(path);
+}
+
 </script>
 <template>
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand h1 m-0" href="#">Library Management</a>
         
-            <form class="d-flex" @submit="handleSearch" role="search">
-        <input v-model="searchQuery" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
+      
 
             <ul class="nav justify-content-end ">
+                <li>
+
+                </li>
                 <li class="nav-item" v-if = "!auth_store.isAuthenticated">
                     <RouterLink class="nav-link" to="/login">Login</RouterLink>
                 </li>
@@ -40,8 +44,12 @@ function handleSearch(event) {
                 <li class="nav-item" v-if = "auth_store.isAuthenticated">
                     <a class="nav-link">{{auth_store.username}}</a>
                 </li>
+
                 <li class="nav-item disabled" v-if = "auth_store.isAuthenticated ">
                     <RouterLink class="nav-link" to="/">Home</RouterLink>
+                </li>
+                <li class="nav-item" v-if = "auth_store.isAuthenticated">
+                    <RouterLink class="nav-link" to="/search">Search Books</RouterLink>
                 </li>
                 <li class="nav-item disabled" v-if = "auth_store.isAuthenticated ">
                     <RouterLink class="nav-link" to="/dashboard">Dashboard</RouterLink>

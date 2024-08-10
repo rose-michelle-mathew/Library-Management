@@ -197,7 +197,8 @@ def export_all_activity_to_csv():
                 activity.approved_date.strftime('%Y-%m-%d %H:%M:%S'),
                 activity.status
             ])
-
+            
+    send_completion_alert(csv_file_path)
     print(f"CSV export completed: {csv_file_path}")
 
 @shared_task(ignore_result=False)

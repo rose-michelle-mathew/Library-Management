@@ -547,33 +547,35 @@ class DownloadCSV(Resource):
 class Search(Resource):
     def post(self):
         data = request.get_json()
-        query = data.get('query', '')
-        section_id = data.get('section_id')  # Get section_id from the request
 
-        # Search for books by name, content, authors, or section name within the specific section
-        books = Book.query.join(Section).filter(
-            (Book.section_id == section_id) &  # Filter by section_id
-            (
-                (Book.name.ilike(f'%{query}%')) |
-                (Book.content.ilike(f'%{query}%')) |
-                (Book.authors.ilike(f'%{query}%')) |
-                (Section.section_name.ilike(f'%{query}%'))
-            )
-        ).all()
+        section_name = data.get('section_name', '')
+        author_name = data.get('author_name', '')
+        book_name = data.get('book_name', '')
+        content = data.get('content', '')
 
-        response = []
-        for book in books:
-            section = Section.query.get(book.section_id)
-            response.append({
-                'book_id': book.id,
+        # Query the database
+        query = db.session.query(Book).join(Section)
+
+        if section_name:
+            query = query.filter(Section.section_name.ilike(f"%{section_name}%"))
+        if author_name:
+            query = query.filter(Book.authors.ilike(f"%{author_name}%"))
+        if book_name:
+            query = query.filter(Book.name.ilike(f"%{book_name}%"))
+        if content:
+            query = query.filter(Book.content.ilike(f"%{content}%"))
+
+        results = query.all()
+
+        # Serialize the results
+        books = [
+            {
+                'id': book.id,
                 'name': book.name,
-                'description': book.content,
+                'content': book.content,
                 'authors': book.authors,
-                'section': {
-                    'section_id': section.id,
-                    'name': section.section_name,
-                    'description': section.description
-                }
-            })
+                'section_name': book.section.section_name
+            } for book in results
+        ]
 
-        return make_response(jsonify(response), 200)
+        return make_response(jsonify({'books': books}), 200)
