@@ -92,11 +92,10 @@ class Register(Resource):
             return make_response(jsonify({'message':str(e)}),500)
         
 class Logout(Resource):
-    @auth_token_required  # Ensure user is authenticated
+    @auth_token_required 
     def post(self):
         user = current_user
 
-        # Find the latest login entry for the current user
         login_entry = UserLogins.query.filter_by(user_id=user.id).order_by(UserLogins.login_time.desc()).first()
         if login_entry and not login_entry.logout_time:
             login_entry.logout_time = datetime.utcnow()
