@@ -12,7 +12,6 @@ class AllSections(Resource):
 
     ### Get all Sections from the database
     @cache.cached(timeout=50)
-    @auth_token_required
     @marshal_with(section)
     def get(self):
         sections = Section.query.all()

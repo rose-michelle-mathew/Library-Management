@@ -2,7 +2,11 @@
 import { RouterLink } from 'vue-router';
 import { authStore } from '../stores/authStore';
 import { defineProps, ref, onMounted } from 'vue'; 
+
+import { messageStore } from '@/stores/messageStore';
 const auth_store = authStore();
+
+const message_store = messageStore();
 
 import  Sections  from '../components/Sections.vue';
 
