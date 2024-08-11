@@ -8,20 +8,19 @@ charts_bp = Blueprint('charts', __name__)
 
 @charts_bp.route('/api/v1/most-borrowed-books', methods=['GET'])
 def most_borrowed_books():
-    # Query the all_activity table to get the most borrowed books where the status is 'borrowed'
     books = db.session.query(
-        Book.name,  # Assuming the Book model has a 'name' attribute
+        Book.name,  
         db.func.count(AllActivity.book_id).label('borrowed_count')
     ).join(
-        AllActivity,  # Join with the AllActivity table
-        Book.id == AllActivity.book_id  # Assuming 'book_id' is the foreign key in AllActivity
+        AllActivity,  
+        Book.id == AllActivity.book_id  
     ).filter(
-        AllActivity.status == 'borrowed'  # Filter for status 'borrowed'
+        AllActivity.status == 'borrowed'  
     ).group_by(
-        Book.name  # Group by book name
+        Book.name  
     ).order_by(
-        db.func.count(AllActivity.book_id).desc()  # Order by borrow count
-    ).limit(5).all()  # Limit to top 5 most borrowed books
+        db.func.count(AllActivity.book_id).desc()  
+    ).limit(5).all()  
 
     data = {
         'labels': [book_name for book_name, _ in books],
@@ -66,7 +65,7 @@ def get_active_users():
      .group_by(User.username)\
         .limit(5).all()
 
-    # Prepare data for pie chart
+  
     response_data = {
         'labels': [username for _, username in active_users_data],
         'datasets': [{
@@ -79,7 +78,7 @@ def get_active_users():
 
 @charts_bp.route('/api/v1/popular-sections', methods=['GET'])
 def popular_sections():
-    # Query the count of books in each section
+   
     sections = db.session.query(
         Section.section_name,
         db.func.count(Book.id).label('total_books_in_section')
@@ -89,7 +88,7 @@ def popular_sections():
         Section.section_name
     ).subquery()
 
-    # Query the count of borrowed books in each section
+   
     borrowed_books = db.session.query(
         Section.section_name,
         db.func.count(BorrowedBooks.id).label('borrowed_books_in_section')
@@ -103,7 +102,7 @@ def popular_sections():
         Section.section_name
     ).subquery()
 
-    # Combine both queries
+    
     combined = db.session.query(
         sections.c.section_name,
         sections.c.total_books_in_section,
@@ -111,10 +110,10 @@ def popular_sections():
     ).outerjoin(
         borrowed_books, sections.c.section_name == borrowed_books.c.section_name
     ).order_by(
-        sections.c.total_books_in_section.desc()  # Corrected ordering
+        sections.c.total_books_in_section.desc()  
     ).limit(5).all()
 
-    # Prepare the data for the chart
+   
     data = {
         'labels': [row.section_name for row in combined],
         'datasets': [
@@ -141,7 +140,7 @@ def popular_sections():
 def get_borrowed_books_by_section():
     user_id = current_user.id
 
-    # Query to get count of borrowed books by section for a specific user
+    
     section_counts = db.session.query(
         Section.section_name,
         func.count(BorrowedBooks.id)
@@ -154,15 +153,14 @@ def get_borrowed_books_by_section():
 
     colors = ['rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.6)',
               'rgba(255, 206, 86, 0.7)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)']
-
-    # Prepare data for chart
+# Prepare data for chart
     section_data = {
         'labels': [section_name for section_name, _ in section_counts],
         'datasets': [{
             'label': 'Books by section',
             'data': [count for _, count in section_counts],
-            'backgroundColor': colors[:len(section_counts)],  # Use only as many colors as there are sections
-            'borderColor': colors[:len(section_counts)],      # Match borderColor with backgroundColor
+            'backgroundColor': colors[:len(section_counts)],  
+            'borderColor': colors[:len(section_counts)],      
             'borderWidth': 1
         }]
     }
@@ -175,7 +173,6 @@ def get_borrowed_books_by_section():
 def get_recent_user_activity():
     user_id = current_user.id
 
-    # Query to get data grouped by month
     activities = db.session.query(
         func.strftime('%Y-%m', AllActivity.requested_date).label('month'),
         AllActivity.status,
@@ -183,7 +180,6 @@ def get_recent_user_activity():
     ).filter(AllActivity.user_id == user_id).group_by(func.strftime('%Y-%m', AllActivity.requested_date), AllActivity.status)\
      .order_by(func.strftime('%Y-%m', AllActivity.requested_date), AllActivity.status).all()
 
-    # Organize the data into a structure suitable for a multi-line chart
     status_data = {}
     for month, status, count in activities:
         if status not in status_data:
@@ -191,7 +187,6 @@ def get_recent_user_activity():
         status_data[status]['months'].append(month)
         status_data[status]['counts'].append(count)
 
-    # Ensure that all statuses have data for all months
     all_months = sorted(set(month for month, _, _ in activities))
     response_data = {
         'labels': all_months,

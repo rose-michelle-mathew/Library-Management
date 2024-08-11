@@ -2,13 +2,12 @@
 import { RouterLink } from 'vue-router';
 import { authStore } from '../stores/authStore';
 import { defineProps, ref, onMounted } from 'vue'; 
-
+import  Sections  from '../components/Sections.vue';
 import { messageStore } from '@/stores/messageStore';
 const auth_store = authStore();
 
 const message_store = messageStore();
 
-import  Sections  from '../components/Sections.vue';
 
 const all_sections = ref([]);
 onMounted(()=>{
@@ -22,6 +21,8 @@ function fetch_sections(){
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
+        'Authentication-Token': auth_store.token
+
       },
     }).then(
       (response) => {

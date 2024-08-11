@@ -80,7 +80,7 @@ async function deleteSection(id) {
 
 <template>
   <div class="container mt-4">
-    <div v-if="sectionData" class="row">
+    <div v-if="sectionData" class="row" >
       <!-- Card for Librarians -->
       <div v-if="auth_store.role === 'librarian'" class="row">
         <div class="card">

@@ -106,7 +106,7 @@ class Sections(Resource):
 class AllBooks(Resource):
 
     ### get books by Section
-    @auth_token_required
+
     def get(self,id):
         books = Book.query.filter_by(section_id=id).all()
         if not books:

@@ -17,7 +17,6 @@ const message_store = messageStore();
 
 async function addSection() {
   const date_created = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-  console.log(date_created)
   const section_details = {
     section_name: section_name.value,
     description: description.value,
@@ -45,9 +44,8 @@ async function addSection() {
     console.log(data.message);
     console.log(date_created);
     message_store.setmessage(data.message);
-    router.push({
-      path: '/',
-    });
+
+      router.push({ path: '/', query: { refresh: Date.now() } }); // Pass a query parameter to trigger a refresh
   } catch (error) {
 
     console.log(error.message);

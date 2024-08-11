@@ -74,13 +74,13 @@ from applications.task import check_and_send_reminders, send_monthly_activity_re
 def setup_periodic_tasks(sender, **kwargs):
     # Schedule daily reminder task at 9:30
     sender.add_periodic_task(
-        crontab(hour=9, minute=30),
+        crontab(hour=11, minute=44),
         check_and_send_reminders.s(),
     )
     
     # Schedule monthly report task on the first day of every month
     sender.add_periodic_task(
-        crontab(day_of_month=1, hour=8, minute=30),
+        crontab(day_of_month=11, hour=12, minute=1),
         send_monthly_activity_report.s(),
     )
 

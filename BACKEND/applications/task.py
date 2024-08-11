@@ -76,14 +76,18 @@ def send_monthly_activity_report():
     first_day_of_last_month = first_day_of_last_month.replace(day=1)
     last_day_of_last_month = today.replace(day=1) - timedelta(days=1)
 
-    issued_books_data = db.session.query(BorrowedBooks, Book, User).join(Book).join(User).filter(
-        BorrowedBooks.issue_date >= first_day_of_last_month,
-        BorrowedBooks.issue_date <= last_day_of_last_month
-    ).all()
+    issued_books_data = (
+    db.session.query(AllActivity, Book, User)
+    .join(Book, AllActivity.book_id == Book.id)
+    .join(User, AllActivity.user_id == User.id)
+    .filter(
+        AllActivity.status == 'borrowed',
+        AllActivity.approved_date >= first_day_of_last_month,
+        AllActivity.approved_date <= last_day_of_last_month
+    )
+    .all()
+)
 
-    overdue_books_data = db.session.query(BorrowedBooks, Book, User).join(Book).join(User).filter(
-        BorrowedBooks.due_date < today
-    ).all()
 
     books_by_section = db.session.query(
         Section.section_name, func.count(AllActivity.id)
@@ -98,31 +102,23 @@ def send_monthly_activity_report():
         Book.date_created <= last_day_of_last_month
     ).all()
 
-    new_sections_data = db.session.query(
-        Section, func.count(Book.id).label('book_count')
-    ).outerjoin(Book).filter(
+    new_sections_data = (
+    db.session.query(Section.section_name, Section.date_created)
+    .filter(
         Section.date_created >= first_day_of_last_month,
         Section.date_created <= last_day_of_last_month
-    ).group_by(Section.id).all()
+    )
+    .all()
+)
 
     data = {
         'issued_books': [
             {
                 'book_name': book.Book.name,
                 'user': book.User.username,
-                'issue_date': book.BorrowedBooks.issue_date.strftime('%Y-%m-%d'),
-                'due_date': book.BorrowedBooks.due_date.strftime('%Y-%m-%d')
+                'issue_date': book.AllActivity.approved_date.strftime('%Y-%m-%d')
             }
             for book in issued_books_data
-        ],
-        'overdue_books': [
-            {
-                'book_name': book.Book.name,
-                'user': book.User.username,
-                'issue_date': book.BorrowedBooks.issue_date.strftime('%Y-%m-%d'),
-                'due_date': book.BorrowedBooks.due_date.strftime('%Y-%m-%d')
-            }
-            for book in overdue_books_data
         ],
         'books_by_section': [
             {
@@ -139,13 +135,12 @@ def send_monthly_activity_report():
             }
             for book in new_books_data
         ],
-        'new_sections': [
-            {
-                'section_name': section.Section.section_name,
-                'date_created': section.Section.date_created.strftime('%Y-%m-%d'),
-                'book_count': section.book_count
-            }
-            for section in new_sections_data
+         'new_sections': [
+        {
+            'section_name': section_name,
+            'date_created': date_created.strftime('%Y-%m-%d')
+        }
+        for section_name, date_created in new_sections_data
         ]
     }
 
