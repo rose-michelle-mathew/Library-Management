@@ -8,10 +8,11 @@ from datetime import datetime,timedelta
 from applications.task import export_all_activity_to_csv, send_book_notification
 from applications.cache import cache
 
-class AllSections(Resource):
-    @cache.cached(timeout=50)
+class AllSections(Resource): 
 
-## To obtain all the sections in the Database, User and Librarian can view
+    ### Get all Sections from the database
+    @cache.cached(timeout=50)
+    @auth_token_required
     @marshal_with(section)
     def get(self):
         sections = Section.query.all()
@@ -19,22 +20,20 @@ class AllSections(Resource):
     
 class Sections(Resource):
     
-    ### To add a new section to the database, only librarian can add
-
+    ### Get section by ID
     @marshal_with(section)
     def get(self, id):
         section = Section.query.get(id)
         if not section:
-            return make_response(jsonify({'message':'Section not FOund'}),404)
+            return make_response(jsonify({'message':'Section not Found'}),404)
         return section
 
-
-
+    ### Add new Section 
     @auth_token_required
     @roles_required('librarian')
     def post(self):
-        data = request.get_json()
 
+        data = request.get_json()
         section_name = data.get('section_name')
         description = data.get('description')
         date_created = data.get('date_created')
@@ -59,6 +58,8 @@ class Sections(Resource):
         except Exception as e:
             return make_response(jsonify({'message':str(e)}),400)
         
+    
+    ### Delete Section         
     @auth_token_required
     @roles_required('librarian')
     def delete(self,id):
@@ -74,7 +75,8 @@ class Sections(Resource):
         except Exception as e:
             return make_response(jsonify({'message':str(e)}),400)
 
-        
+    
+    ### Edit Section
     @auth_token_required
     @roles_required('librarian')
     def put(self, id):
@@ -103,6 +105,9 @@ class Sections(Resource):
             return make_response(jsonify({"message":str(e)}),404)
         
 class AllBooks(Resource):
+
+    ### get books by Section
+    @auth_token_required
     def get(self,id):
         books = Book.query.filter_by(section_id=id).all()
         if not books:
@@ -126,7 +131,7 @@ class AllBooks(Resource):
     
 class Books(Resource):
     
-    ### adding a new book to the db, only restriced to librarian 
+    ### Add new book
     @auth_token_required
     @roles_required('librarian')
     def post(self):
@@ -166,6 +171,8 @@ class Books(Resource):
         except Exception as e:
             return make_response(jsonify({'message':str(e)}),400)
         
+    
+    ### Edit Book
     @auth_token_required
     @roles_required('librarian')
     def put(self, id):
@@ -208,7 +215,9 @@ class Books(Resource):
             return make_response(jsonify({"message":"Book Edited Successfully"}),201)
         except Exception as e:
             return make_response(jsonify({"message":str(e)}),404)
-        
+    
+
+    ### Delete book
     @auth_token_required
     @roles_required('librarian')
     def delete(self,id):
@@ -226,10 +235,10 @@ class Books(Resource):
               
 class BookRequests(Resource):
 
-    
+    ### Create book Request
     @auth_token_required
     @roles_required('user')
-    def post(self): ## Creates  a new request 
+    def post(self):  
         data = request.get_json()
 
         book_name = data.get('book_name')
@@ -262,7 +271,7 @@ class BookRequests(Resource):
             return make_response(jsonify({'message':'You have already borrowed more than 5 books, Return Books to request more'}), 400)
         
         # Create a new request
-        new_request = Request(book_id=book.id, user_id=user_id, status='Pending')  # Assuming status starts as Pending
+        new_request = Request(book_id=book.id, user_id=user_id, status='Pending')  
         try:
             db.session.add(new_request)
             db.session.commit()
@@ -271,9 +280,10 @@ class BookRequests(Resource):
             return make_response(jsonify({'message': str(e)}), 400)
         
 
+    ### Return Book
     @auth_token_required
     @roles_required('user')
-    def put(self): ## return a book
+    def put(self): 
         data = request.get_json()
         borrowed_id = data.get('borrowed_id')
 
@@ -292,7 +302,7 @@ class BookRequests(Resource):
         )
         try:
             db.session.add(activity_log)
-            db.session.delete(borrowed_book)  # Remove the borrowed entry
+            db.session.delete(borrowed_book)  
             db.session.commit()
             return make_response(jsonify({"message": "Book returned successfully"}), 200)
         except Exception as e:
@@ -300,6 +310,7 @@ class BookRequests(Resource):
             return make_response(jsonify({"message": str(e)}), 400)
 
 
+    ### View Requests
     @auth_token_required
     def get(self):
         if current_user.has_role('librarian'):
@@ -335,16 +346,12 @@ class BookRequests(Resource):
                 'date_of_request': req.date_of_request.strftime('%Y-%m-%d')
             })
 
-
-
         return make_response(jsonify(response), 200)
 
 
-    
-            
+    ### Revoke Request
     @auth_token_required
     @roles_required('user')
-    ## revoking  a request
     def delete(self, request_id):
         # Check if the request exists
         book_request = Request.query.get(request_id)
@@ -359,16 +366,15 @@ class BookRequests(Resource):
             return make_response(jsonify({'message': str(e)}), 400)
 
 class ApproveRejectRequest(Resource):
+    
+    ### Approve/ Reject Request
     @auth_token_required
     @roles_required('librarian')
-
     def put(self):
         data = request.get_json()
         request_id = data.get('request_id')
         action = data.get('action')
-        # action should be 'approve' or 'reject'
 
-        # Fetch the request by ID
         book_request = Request.query.get(request_id)
         if not book_request:
             return make_response(jsonify({"message": "Request not found"}), 404)
@@ -381,9 +387,8 @@ class ApproveRejectRequest(Resource):
             if borrowed_books_count >= 5:
                 return make_response(jsonify({"message": "User has borrowed more than 5 books"}), 400)
             
-            # Approve the request and add to ActivityLog and BorrowedBooks
             issue_date = datetime.utcnow()
-            due_date = issue_date + timedelta(days=7)  # Assuming a 7-day borrowing period
+            due_date = issue_date + timedelta(days=7)  
             borrowed_book = BorrowedBooks(
                 user_id=book_request.user_id,
                 book_id=book_request.book_id,
@@ -405,7 +410,6 @@ class ApproveRejectRequest(Resource):
             db.session.delete(book_request)
             db.session.commit()
 
-            # Send email notification
             subject = "Book  Request Approved"
             message = f"Your request to borrow '{book.name}' has been approved. Due date: {due_date.strftime('%Y-%m-%d')}."
             send_book_notification.delay(user.email, subject, message)
@@ -413,7 +417,6 @@ class ApproveRejectRequest(Resource):
             return make_response(jsonify({"message": "Request approved and book borrowed"}), 200)
 
         elif action == 'reject':
-            # Add to ActivityLog as rejected and delete the request
             activity_log = AllActivity(
                 user_id=book_request.user_id,
                 book_id=book_request.book_id,
@@ -436,11 +439,11 @@ class ApproveRejectRequest(Resource):
             return make_response(jsonify({"message": "Invalid action"}), 400)
 
 
+    ### Get borrowed books
     @auth_token_required
     def get(self):
 
         if current_user.has_role('librarian'):
-            # Librarian view: Retrieve all requests
             borrowed_books = BorrowedBooks.query.all()
         else:
             user_id = current_user.id
@@ -474,13 +477,12 @@ class ApproveRejectRequest(Resource):
         return make_response(jsonify(response), 200)
     
 class UserHistory(Resource):
+
     @cache.cached(timeout=50)
     @auth_token_required
     @roles_required('user')
     def get(self):
         user_id = current_user.id
-
-        # Fetch activity logs with status 'rejected' and 'returned'
         activity_logs = (AllActivity.query
         .filter(AllActivity.user_id == user_id, AllActivity.status.in_(['rejected', 'returned', 'revoked']))
         .order_by(desc(AllActivity.approved_date))  
@@ -515,15 +517,15 @@ class UserHistory(Resource):
         return make_response(jsonify(response), 200)
     
 class RevokeAccess(Resource):
+
+    ### Revoke Access to a book
     @auth_token_required
     @roles_required('librarian')
     def put(self, borrowed_id):
-        # Fetch the borrowed book record by ID
         borrowed_book = BorrowedBooks.query.filter_by(id=borrowed_id).first()
         if not borrowed_book:
             return make_response(jsonify({"message": "Borrowed book record not found"}), 404)
 
-        # Log the revocation in the activity log
         activity_log = AllActivity(
             user_id=borrowed_book.user_id,
             book_id=borrowed_book.book_id,
@@ -533,7 +535,7 @@ class RevokeAccess(Resource):
         )
         try:
             db.session.add(activity_log)
-            db.session.delete(borrowed_book)  # Remove the borrowed entry
+            db.session.delete(borrowed_book)  
             db.session.commit()
             return make_response(jsonify({"message": "Book access revoked successfully"}), 200)
         except Exception as e:
@@ -541,10 +543,14 @@ class RevokeAccess(Resource):
             return make_response(jsonify({"message": str(e)}), 400)
 
 class DownloadCSV(Resource):
+
+    @auth_token_required
     def get(self):
         export_all_activity_to_csv.delay() 
 
 class Search(Resource):
+
+    @auth_token_required
     def post(self):
         data = request.get_json()
 
@@ -553,7 +559,6 @@ class Search(Resource):
         book_name = data.get('book_name', '')
         content = data.get('content', '')
 
-        # Query the database
         query = db.session.query(Book).join(Section)
 
         if section_name:
@@ -567,7 +572,6 @@ class Search(Resource):
 
         results = query.all()
 
-        # Serialize the results
         books = [
             {
                 'id': book.id,

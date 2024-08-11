@@ -84,7 +84,6 @@ class BorrowedBooks(db.Model):
     issue_date = db.Column(db.DateTime, default=datetime.utcnow)
     due_date = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(50), nullable=False)
-    # date_of_activity = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
         return f'<BorrowedBooks {self.id} - {self.status}>'
