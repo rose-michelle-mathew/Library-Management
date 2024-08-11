@@ -11,7 +11,6 @@ from applications.cache import cache
 class AllSections(Resource): 
 
     ### Get all Sections from the database
-    @cache.cached(timeout=50)
     @marshal_with(section)
     def get(self):
         sections = Section.query.all()
@@ -61,20 +60,35 @@ class Sections(Resource):
     ### Delete Section         
     @auth_token_required
     @roles_required('librarian')
-    def delete(self,id):
+    def delete(self, id):
         section = Section.query.get(id)
 
         if not section:
-                return make_response(jsonify({"message":"Section Does not exist"}),404)
-        
+            return make_response(jsonify({"message": "Section Does not exist"}), 404)
+
         try:
+            # Find all books in the section
+            books_to_delete = Book.query.filter_by(section_id=id).all()
+
+            for book in books_to_delete:
+                # Delete related records in BorrowedBooks and AllActivity
+                BorrowedBooks.query.filter_by(book_id=book.id).delete()
+                AllActivity.query.filter_by(book_id=book.id).delete()
+                Request.query.filter_by(book_id=book.id).delete()
+
+
+                # Delete the book
+                db.session.delete(book)
+
+            # Now delete the section
             db.session.delete(section)
             db.session.commit()
-            return make_response(jsonify({'message':'Section deleted successfully'}),200)
-        except Exception as e:
-            return make_response(jsonify({'message':str(e)}),400)
 
-    
+            return make_response(jsonify({'message': 'Section and all associated books deleted successfully'}), 200)
+        except Exception as e:
+            db.session.rollback()  # Rollback the session in case of error
+            return make_response(jsonify({'message': str(e)}), 400)
+
     ### Edit Section
     @auth_token_required
     @roles_required('librarian')
@@ -219,18 +233,29 @@ class Books(Resource):
     ### Delete book
     @auth_token_required
     @roles_required('librarian')
-    def delete(self,id):
+    def delete(self, id):
+        # Fetch the book by ID
         book = Book.query.get(id)
 
+        # Check if the book exists
         if not book:
-                return make_response(jsonify({"message":"Book Does not exist"}),404)
-        
+            return make_response(jsonify({"message": "Book Does not exist"}), 404)
+
         try:
+            # Delete related records in BorrowedBooks and AllActivity
+            BorrowedBooks.query.filter_by(book_id=book.id).delete()
+            AllActivity.query.filter_by(book_id=book.id).delete()
+            Request.query.filter_by(book_id=book.id).delete()
+
+
+            # Delete the book
             db.session.delete(book)
             db.session.commit()
-            return make_response(jsonify({'message':'Book deleted successfully'}),200)
+            return make_response(jsonify({'message': 'Book deleted successfully'}), 200)
+
         except Exception as e:
-            return make_response(jsonify({'message':str(e)}),400)
+            db.session.rollback()  # Rollback the session in case of error
+            return make_response(jsonify({'message': str(e)}), 400)
               
 class BookRequests(Resource):
 

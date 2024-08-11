@@ -140,17 +140,16 @@ def popular_sections():
 def get_borrowed_books_by_section():
     user_id = current_user.id
 
-    
     section_counts = db.session.query(
         Section.section_name,
-        func.count(BorrowedBooks.id)
-    ).join(Book, BorrowedBooks.book_id == Book.id)\
+        func.count(AllActivity.id)
+    ).join(Book, AllActivity.book_id == Book.id)\
      .join(Section, Book.section_id == Section.id)\
-     .filter(BorrowedBooks.user_id == user_id)\
+     .filter(AllActivity.user_id == user_id, AllActivity.status == 'borrowed')\
      .group_by(Section.section_name)\
-     .order_by(func.count(BorrowedBooks.id).desc())\
+     .order_by(func.count(AllActivity.id).desc())\
      .limit(5).all()
-
+    
     colors = ['rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.6)',
               'rgba(255, 206, 86, 0.7)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)']
 # Prepare data for chart

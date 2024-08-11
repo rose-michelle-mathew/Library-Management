@@ -40,12 +40,12 @@ async function addSection() {
         console.log(date_created)
       throw new Error(data.message || 'Error Adding Section');
     }
+    router.push('/'); // Redirect to another page after deletion
 
     console.log(data.message);
     console.log(date_created);
     message_store.setmessage(data.message);
 
-      router.push({ path: '/', query: { refresh: Date.now() } }); // Pass a query parameter to trigger a refresh
   } catch (error) {
 
     console.log(error.message);
