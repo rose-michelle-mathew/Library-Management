@@ -49,7 +49,7 @@ function revokeRequest(requestId) {
       }).then(response => {
         if (response.ok) {
           message_store.setmessage('Request revoked successfully');
-          fetchRequests(); // Refresh the list of requests
+          fetchRequests(); 
         } else {
           response.json().then(data => {
             console.log(data);
@@ -81,7 +81,7 @@ function approveRejectRequest(requestId, action) {
       }).then(response => {
         if (response.ok) {
           message_store.setmessage(`Request ${action}ed successfully`);
-          fetchRequests(); // Refresh the list of requests
+          fetchRequests(); 
         } else {
           response.json().then(data => {
             console.log(data);

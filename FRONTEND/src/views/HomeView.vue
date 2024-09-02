@@ -88,7 +88,7 @@ function fetch_sections(){
 
 <style scoped>
 .landing-page {
-  background-image: url('/home/michelle/IITM/MAD2_proj/FRONTEND/src/assets/photo-1481627834876-b7833e8f5570.avif'); /* Adjust the path to your image */
+  background-image: url('/home/michelle/MAD2_PROJECT_FINAL/MAD2_proj/FRONTEND/src/assets/photo-1481627834876-b7833e8f5570.avif'); 
   background-size: cover;
   background-position: center;
   min-height: 100vh;

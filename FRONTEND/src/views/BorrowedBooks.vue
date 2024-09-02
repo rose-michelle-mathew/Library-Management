@@ -57,7 +57,7 @@ function returnBook(borrowedId) {
       }).then(response => {
         if (response.ok) {
           message_store.setmessage('Book returned successfully');
-          fetchBorrowedBooks(); // Refresh the list of borrowed books
+          fetchBorrowedBooks(); 
         } else {
           response.json().then(data => {
             console.log(data);
@@ -88,7 +88,7 @@ function revokeAccess(borrowedId) {
       }).then(response => {
         if (response.ok) {
           message_store.setmessage('Book access revoked successfully');
-          fetchBorrowedBooks(); // Refresh the list of borrowed books
+          fetchBorrowedBooks(); 
         } else {
           response.json().then(data => {
             console.log(data);

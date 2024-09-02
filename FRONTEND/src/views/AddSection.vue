@@ -40,7 +40,7 @@ async function addSection() {
         console.log(date_created)
       throw new Error(data.message || 'Error Adding Section');
     }
-    router.push('/'); // Redirect to another page after deletion
+    router.push('/'); 
 
     console.log(data.message);
     console.log(date_created);

@@ -59,7 +59,7 @@
   const ctx = canvasRef.value.getContext('2d');
 
   new Chart(ctx, {
-    type: type, // Pass 'pie' for pie chart
+    type: type, 
     data: data,
     options: {
       responsive: true,
@@ -81,13 +81,12 @@
           }
         }
       },
-      // Conditionally include scales based on chart type
       scales: type === 'pie' || type === 'doughnut' ? undefined : {
         x: { beginAtZero: true },
         y: {
           beginAtZero: true,
           ticks: {
-            callback: function(value) { return Math.ceil(value) }, // Ensure whole numbers only
+            callback: function(value) { return Math.ceil(value) }, 
           },
           suggestedMax: Math.max(...data.datasets[0].data) + 3
         },
@@ -133,9 +132,9 @@
   <style scoped>
   .chart-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Two columns */
-    gap: 30px; /* Increased space between cards */
-    padding: 50px 100px; /* Added padding around the container */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 30px;
+    padding: 50px 100px; 
   }
   
   .chart-card {
@@ -159,12 +158,12 @@
     font-size: 1.6em;
     color: #333;
     text-align: center;
-    font-family: 'Roboto', sans-serif; /* Improved font */
+    font-family: 'Roboto', sans-serif; 
   }
   
   .chart-wrapper {
     width: 100%;
-    height: 250px; /* Increased chart height for better visibility */
+    height: 250px; 
     position: relative;
   }
   

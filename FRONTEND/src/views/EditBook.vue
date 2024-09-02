@@ -62,7 +62,7 @@
     }
   }
   function cancelEditing() {
-  router.go(-1); // Go back to the previous page
+  router.go(-1); 
 }
   </script>
 

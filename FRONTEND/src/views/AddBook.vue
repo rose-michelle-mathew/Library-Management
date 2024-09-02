@@ -6,11 +6,10 @@ import { messageStore } from '@/stores/messageStore';
 import { format } from 'date-fns';
 
 const router = useRouter();
-const route = useRoute(); // Initialize route with useRoute
-
+const route = useRoute(); 
 
 const book_name = ref('');
-const section_name = ref(route.query.sectionName || ''); // Default to empty if not provided
+const section_name = ref(route.query.sectionName || ''); 
 const section_id = ref('');
 const content = ref('');
 const authors = ref('');

@@ -55,7 +55,7 @@ function editSection() {
       if (response.ok) {
         response.json().then(data => {
           message_store.setmessage('Section updated successfully');
-          router.push('/'); // Redirect to another page after editing
+          router.push('/'); 
         });
       } else {
         response.json().then(data => {
@@ -70,7 +70,7 @@ function editSection() {
 }
 
 function cancelEditing() {
-  router.push('/'); // Redirect to another page without saving changes
+  router.push('/'); 
 }
 </script>
 

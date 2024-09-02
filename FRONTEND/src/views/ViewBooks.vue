@@ -111,12 +111,10 @@ function editBook(book) {
       <div class="col-12">
         <h2>{{ section_name }}</h2>
 
-        <!-- Display a message if no books are found -->
         <div v-if="books.length === 0" class="alert alert-info">
           No books found in this section.
         </div>
 
-        <!-- Display books if available -->
         <div v-for="book in books" :key="book.book_id" class="card mb-3">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">{{ book.name }}</h5>
